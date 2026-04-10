@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь — Мой сайт</title>
+    <style id="theme-style">
+        /* Основные стили */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        header {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 900px;
+            margin: 30px auto;
+            text-align: center;
+        }
+
+        /* Кнопка переключения стиля */
+        .toggle-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Обычный календарь */
+        .calendar {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.5s;
+        }
+
+        .calendar-header {
+            background: #35424a;
+            color: white;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: #f4f4f4;
+            font-weight: bold;
+            padding: 10px 0;
+        }
+
+        .weekdays div {
+            text-align: center;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            padding: 15px;
+        }
+
+        .day {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .day:hover {
+            background: #e6e6e6;
+            cursor: pointer;
+        }
+
+        .today {
+            background: #0066cc;
+            color: white;
+            font-weight: bold;
+        }
+
+        .other-month {
+            color: #aaa;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ccc;
+            margin-top: 50px;
+        }
+
+        /* Стеклянный стиль (включается JS) */
+        .glass {
+            background: rgba(255, 255, 255, 0.15) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass .weekdays {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .glass .weekdays div {
+            color: white;
+        }
+
+        .glass .day {
+            color: white;
+        }
+
+        .glass .other-month {
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📅 Календарь</h1>
+        <p>Интерактивный календарь с переключением стиля</p>
+    </header>
+
+    <div class="container">
+        <button class="toggle-btn" id="theme-toggle">Включить стеклянный стиль</button>
+
+        <div class="calendar" id="calendar">
+            <div class="calendar-header" id="month-year">Загрузка...</div>
+            <div class="weekdays">
+                <div>Пн</div>
+                <div>Вт</div>
+                <div>Ср</div>
+                <div>Чт</div>
+                <div>Пт</div>
+                <div>Сб</div>
+                <div>Вс</div>
+            </div>
+            <div class="days" id="days-grid"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Мой Сайт. Все права защищены.</p>
+    </footer>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        const calendar = document.getElementById('calendar');
+        const monthYear = document.getElementById('month-year');
+        const daysGrid = document.getElementById('days-grid');
+
+        let isGlass = false;
+
+        // Переключение стиля
+        themeToggle.addEventListener('click', () => {
+            isGlass = !isGlass;
+            if (isGlass) {
+                calendar.classList.add('glass');
+                themeToggle.textContent = 'Обычный стиль';
+            } else {
+                calendar.classList.remove('glass');
+                themeToggle.textContent = 'Включить стеклянный стиль';
+            }
+        });
+
+        // Генерация календаря
+        function generateCalendar(month, year) {
+            monthYear.textContent = new Date(year, month).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+            daysGrid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            const currentMonthDays = new Date(year, month + 1, 0).getDate();
+
+            let start = firstDay === 0 ? 6 : firstDay - 1; // Понедельник — первый день
+
+            // Дни предыдущего месяца
+            for (let i = start; i > 0; i--) {
+                const day = document.createElement('div');
+                day.classList.add('day', 'other-month');
+                day.textContent = prevMonthDays - i + 1;
+                daysGrid.appendChild(day);
+            }
+
+            // Дни текущего месяца
+            const today = new Date();
+            for (let i = 1; i <= currentMonthDays; i++) {
+                const day = document.createElement('div');
+                day.classList.add('day');
+                day.textContent = i;
+
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    day.classList.add('today');
+                }
+
+                day.addEventListener('click', () => {
+                    alert(`Вы выбрали: ${i} ${new Date(year, month).toLocaleDateString('ru-RU', { month: 'long' })}`);
+                });
+
+                daysGrid.appendChild(day);
+            }
+
+            // Дни следующего месяца (до заполнения сетки)
+            const totalDays = start + currentMonthDays;
+            const nextDays = totalDays > 35 ? 42 - totalDays : 35 - totalDays;
+            for (let i = 1; i <= nextDays; i++) {
+                const day = document.createElement('div');
+                day.classList.add('day', 'other-month');
+                day.textContent = i;
+                daysGrid.appendChild(day);
+            }
+        }
+
+        // Загрузка календаря (текущий месяц)
+        const now = new Date();
+        generateCalendar(now.getMonth(), now.getFullYear());
+    </script>
+</body>
+</html>
